@@ -3,12 +3,12 @@
   const $ = (s) => document.querySelector(s);
   const LS = {
     get(k) { try { return localStorage.getItem(k); } catch { return null; } },
-    set(k, v) { try { localStorage.setItem(k, v); } catch { /* приватный режим */ } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch { /* РїСЂРёРІР°С‚РЅС‹Р№ СЂРµР¶РёРј */ } },
   };
   const svgHeart = '<svg viewBox="0 0 24 24"><path d="M12 20.5s-7.6-4.6-9.6-9.3C1 7.9 3.1 4.5 6.7 4.5c2.1 0 3.6 1.1 5.3 3 1.7-1.9 3.2-3 5.3-3 3.6 0 5.7 3.4 4.3 6.7-2 4.7-9.6 9.3-9.6 9.3z" fill="currentColor"/></svg>';
   const svgCrown = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l4.6 3.8L12 5l4.4 6.8L21 8l-2 10H5L3 8z" fill="currentColor"/></svg>';
 
-  /* ---------- кто я и где ---------- */
+  /* ---------- РєС‚Рѕ СЏ Рё РіРґРµ ---------- */
   let clientId = LS.get('nu_id');
   if (!clientId) {
     clientId = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36));
@@ -21,14 +21,14 @@
     params.set('r', roomId);
     history.replaceState(null, '', location.pathname + '?' + params.toString());
   }
-  $('#roomLabel').textContent = 'комната ' + roomId;
+  $('#roomLabel').textContent = 'РєРѕРјРЅР°С‚Р° ' + roomId;
 
   let myName = LS.get('nu_name') || '';
   const state = { video: null, game: null, users: [], offset: 0 };
   const serverNow = () => Date.now() + state.offset;
   const socket = io({ autoConnect: false });
 
-  /* ---------- мелочи ---------- */
+  /* ---------- РјРµР»РѕС‡Рё ---------- */
   let toastTimer = null;
   function toast(text) {
     const el = $('#toast');
@@ -59,7 +59,7 @@
     return btn;
   }
 
-  /* ---------- вход ---------- */
+  /* ---------- РІС…РѕРґ ---------- */
   const nameInput = $('#nameInput');
   nameInput.value = myName;
   setTimeout(() => nameInput.focus(), 50);
@@ -77,7 +77,7 @@
     socket.emit('hello', { room: roomId, clientId, name: myName }, onWelcome);
     syncClock();
   });
-  socket.on('disconnect', () => toast('Связь потеряна, переподключаюсь…'));
+  socket.on('disconnect', () => toast('РЎРІСЏР·СЊ РїРѕС‚РµСЂСЏРЅР°, РїРµСЂРµРїРѕРґРєР»СЋС‡Р°СЋСЃСЊвЂ¦'));
 
   function syncClock() {
     let best = null, n = 0;
@@ -106,13 +106,13 @@
     scrollChat(true);
     renderPeople();
     renderGame();
-    currentUrl = null; // перезагрузить плеер на случай переподключения
+    currentUrl = null; // РїРµСЂРµР·Р°РіСЂСѓР·РёС‚СЊ РїР»РµРµСЂ РЅР° СЃР»СѓС‡Р°Р№ РїРµСЂРµРїРѕРґРєР»СЋС‡РµРЅРёСЏ
     loadVideo(state.video);
   }
 
-  /* ---------- люди ---------- */
+  /* ---------- Р»СЋРґРё ---------- */
   socket.on('users', (u) => { state.users = u; renderPeople(); renderGame(); });
-  socket.on('joined', ({ name }) => toast(`${name} заходит в уголок`));
+  socket.on('joined', ({ name }) => toast(`${name} Р·Р°С…РѕРґРёС‚ РІ СѓРіРѕР»РѕРє`));
 
   function renderPeople() {
     const box = $('#people');
@@ -131,27 +131,27 @@
       if (u.id === clientId) {
         const y = document.createElement('span');
         y.className = 'person-you person-name';
-        y.textContent = 'ты';
+        y.textContent = 'С‚С‹';
         el.append(y);
       }
-      el.title = u.name + ' — в сети';
+      el.title = u.name + ' вЂ” РІ СЃРµС‚Рё';
       box.append(el);
     }
     if (list.length < 2) {
       const a = document.createElement('span');
       a.className = 'people-alone';
-      a.textContent = 'ждём второго';
+      a.textContent = 'Р¶РґС‘Рј РІС‚РѕСЂРѕРіРѕ';
       box.append(a);
     }
   }
 
   $('#inviteBtn').addEventListener('click', async () => {
     const link = location.origin + location.pathname + '?r=' + encodeURIComponent(roomId);
-    try { await navigator.clipboard.writeText(link); toast('Ссылка скопирована — отправь её второму'); }
-    catch { window.prompt ? window.prompt('Скопируй ссылку:', link) : toast(link); }
+    try { await navigator.clipboard.writeText(link); toast('РЎСЃС‹Р»РєР° СЃРєРѕРїРёСЂРѕРІР°РЅР° вЂ” РѕС‚РїСЂР°РІСЊ РµС‘ РІС‚РѕСЂРѕРјСѓ'); }
+    catch { window.prompt ? window.prompt('РЎРєРѕРїРёСЂСѓР№ СЃСЃС‹Р»РєСѓ:', link) : toast(link); }
   });
 
-  /* ---------- вкладки ---------- */
+  /* ---------- РІРєР»Р°РґРєРё ---------- */
   let activeTab = 'cinema';
   document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => setTab(t.dataset.tab)));
   function setTab(name) {
@@ -165,14 +165,14 @@
     updateGameDot();
   }
 
-  /* ---------- чат ---------- */
+  /* ---------- С‡Р°С‚ ---------- */
   const chatList = $('#chatList');
   let lastMsg = null;
   function showChatEmpty() {
     const p = document.createElement('p');
     p.className = 'chat-empty';
     p.id = 'chatEmpty';
-    p.textContent = 'Здесь будет ваша переписка. Напиши первое сообщение.';
+    p.textContent = 'Р—РґРµСЃСЊ Р±СѓРґРµС‚ РІР°С€Р° РїРµСЂРµРїРёСЃРєР°. РќР°РїРёС€Рё РїРµСЂРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ.';
     chatList.append(p);
   }
   function scrollChat(force) {
@@ -185,7 +185,7 @@
     if (m.sys) {
       const el = document.createElement('div');
       el.className = 'msg-sys';
-      el.textContent = m.text + ' · ' + fmtClock(m.ts);
+      el.textContent = m.text + ' В· ' + fmtClock(m.ts);
       chatList.append(el);
       lastMsg = null;
     } else {
@@ -195,7 +195,7 @@
       el.className = 'msg' + (mine ? ' mine' : '') + (cont ? ' cont' : '');
       const meta = document.createElement('div');
       meta.className = 'msg-meta';
-      meta.textContent = (mine ? 'ты' : m.name) + ' · ' + fmtClock(m.ts);
+      meta.textContent = (mine ? 'С‚С‹' : m.name) + ' В· ' + fmtClock(m.ts);
       const b = document.createElement('div');
       b.className = 'msg-bubble';
       b.textContent = m.text;
@@ -223,16 +223,16 @@
   });
   let typingTimer = null;
   socket.on('typing', ({ name }) => {
-    $('#typing').textContent = `${name} печатает…`;
+    $('#typing').textContent = `${name} РїРµС‡Р°С‚Р°РµС‚вЂ¦`;
     clearTimeout(typingTimer);
     typingTimer = setTimeout(() => { $('#typing').textContent = ''; }, 3000);
   });
 
-  /* ---------- сердечки ---------- */
+  /* ---------- СЃРµСЂРґРµС‡РєРё ---------- */
   $('#heartBtn').addEventListener('click', () => socket.emit('react'));
   socket.on('react', ({ name, actor }) => {
     spawnHearts();
-    if (actor !== socket.id) toast(`${name} отправляет сердечко`);
+    if (actor !== socket.id) toast(`${name} РѕС‚РїСЂР°РІР»СЏРµС‚ СЃРµСЂРґРµС‡РєРѕ`);
   });
   function spawnHearts() {
     const box = $('#hearts');
@@ -252,7 +252,7 @@
     }
   }
 
-  /* ================= ВИДЕО ================= */
+  /* ================= Р’РР”Р•Рћ ================= */
   const video = $('#video');
   const ytWrap = $('#ytWrap');
   let kind = null; // 'yt' | 'file' | null
@@ -273,7 +273,7 @@
         const m = x.pathname.match(/\/(embed|shorts|live|v)\/([\w-]{6,})/);
         if (m) return m[2];
       }
-    } catch { /* не URL */ }
+    } catch { /* РЅРµ URL */ }
     return null;
   }
 
@@ -319,7 +319,7 @@
     },
     seek(t) {
       if (kind === 'yt' && ytReady) yt.seekTo(t, true);
-      if (kind === 'file') { try { video.currentTime = t; } catch { /* ещё не загружено */ } }
+      if (kind === 'file') { try { video.currentTime = t; } catch { /* РµС‰С‘ РЅРµ Р·Р°РіСЂСѓР¶РµРЅРѕ */ } }
     },
   };
 
@@ -331,7 +331,7 @@
   function teardown() {
     suppress(2000);
     kind = null; ytReady = false; ytTitle = '';
-    if (yt) { try { yt.destroy(); } catch { /* уже уничтожен */ } yt = null; }
+    if (yt) { try { yt.destroy(); } catch { /* СѓР¶Рµ СѓРЅРёС‡С‚РѕР¶РµРЅ */ } yt = null; }
     ytWrap.hidden = true;
     ytWrap.innerHTML = '<div id="ytPlayer"></div>';
     if (hls) { hls.destroy(); hls = null; }
@@ -367,7 +367,7 @@
             applyState(true);
           },
           onStateChange: onYtState,
-          onError: () => showError('YouTube не разрешает показать это видео во встроенном плеере. Попробуй другую ссылку.'),
+          onError: () => showError('YouTube РЅРµ СЂР°Р·СЂРµС€Р°РµС‚ РїРѕРєР°Р·Р°С‚СЊ СЌС‚Рѕ РІРёРґРµРѕ РІРѕ РІСЃС‚СЂРѕРµРЅРЅРѕРј РїР»РµРµСЂРµ. РџРѕРїСЂРѕР±СѓР№ РґСЂСѓРіСѓСЋ СЃСЃС‹Р»РєСѓ.'),
         },
       });
     } else {
@@ -375,7 +375,7 @@
       video.hidden = false;
       const isHls = /\.m3u8(\?|#|$)/i.test(url);
       if (isHls && !video.canPlayType('application/vnd.apple.mpegurl')) {
-        try { if (!window.Hls) await loadScript('https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js'); } catch { /* ниже — запасной вариант */ }
+        try { if (!window.Hls) await loadScript('https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js'); } catch { /* РЅРёР¶Рµ вЂ” Р·Р°РїР°СЃРЅРѕР№ РІР°СЂРёР°РЅС‚ */ }
         if (currentUrl !== url) return;
         if (window.Hls && Hls.isSupported()) { hls = new Hls(); hls.loadSource(url); hls.attachMedia(video); }
         else video.src = url;
@@ -389,13 +389,16 @@
 
   video.addEventListener('error', () => {
     if (kind !== 'file') return;
-    showError('Не получилось открыть видео. Нужна прямая ссылка на файл (.mp4, .webm, .m3u8) или ссылка на YouTube. Страницы онлайн-кинотеатров так не открываются.');
+    showError('РќРµ РїРѕР»СѓС‡РёР»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ РІРёРґРµРѕ. РќСѓР¶РЅР° РїСЂСЏРјР°СЏ СЃСЃС‹Р»РєР° РЅР° С„Р°Р№Р» (.mp4, .webm, .m3u8) РёР»Рё СЃСЃС‹Р»РєР° РЅР° YouTube. РЎС‚СЂР°РЅРёС†С‹ РѕРЅР»Р°Р№РЅ-РєРёРЅРѕС‚РµР°С‚СЂРѕРІ С‚Р°Рє РЅРµ РѕС‚РєСЂС‹РІР°СЋС‚СЃСЏ.');
   });
 
   function applyState(force) {
     const v = state.video;
     if (!v || !v.url || !kind) return;
     if (kind === 'yt' && !ytReady) return;
+    // Р’РёРґРµРѕ РµС‰С‘ РЅРµ Р·Р°РїСѓСЃРєР°Р»Рё Рё РѕРЅРѕ РЅР° РїР°СѓР·Рµ: РЅРµ С‚СЂРѕРіР°РµРј РїР»РµРµСЂ,
+    // РёРЅР°С‡Рµ YouTube РЅР° С‚РµР»РµС„РѕРЅРµ РїСЂСЏС‡РµС‚ РїСЂРµРІСЊСЋ Рё РїРѕРєР°Р·С‹РІР°РµС‚ С‡С‘СЂРЅС‹Р№ СЌРєСЂР°РЅ
+    if (kind === 'yt' && !v.playing && [-1, 5].includes(yt.getPlayerState())) { hideJoin(); updateNow(); return; }
     suppress(1500);
     const t = expectedTime(v);
     if (force || Math.abs(P.time() - t) > 1.2) P.seek(t);
@@ -431,7 +434,7 @@
     else if (e.data === 2) localChange(false);
   }
 
-  // Перемотка YouTube на паузе и подстройка рассинхрона
+  // РџРµСЂРµРјРѕС‚РєР° YouTube РЅР° РїР°СѓР·Рµ Рё РїРѕРґСЃС‚СЂРѕР№РєР° СЂР°СЃСЃРёРЅС…СЂРѕРЅР°
   let lastT = 0, tick = 0;
   setInterval(() => {
     const v = state.video;
@@ -458,7 +461,7 @@
     } else {
       applyState();
     }
-    const words = { play: 'включает', pause: 'ставит на паузу', seek: 'перематывает на ' + fmtTime(v.time), set: 'ставит новое видео' };
+    const words = { play: 'РІРєР»СЋС‡Р°РµС‚', pause: 'СЃС‚Р°РІРёС‚ РЅР° РїР°СѓР·Сѓ', seek: 'РїРµСЂРµРјР°С‚С‹РІР°РµС‚ РЅР° ' + fmtTime(v.time), set: 'СЃС‚Р°РІРёС‚ РЅРѕРІРѕРµ РІРёРґРµРѕ' };
     if (v.by && words[v.action]) toast(`${v.by} ${words[v.action]}`);
   });
 
@@ -466,8 +469,8 @@
     const v = state.video;
     const pill = $('#nowPill'), text = $('#nowText');
     pill.className = 'now-pill';
-    if (!v || !v.url) { pill.textContent = 'пусто'; text.textContent = 'Ничего не играет'; return; }
-    pill.textContent = v.playing ? 'идёт' : 'пауза';
+    if (!v || !v.url) { pill.textContent = 'РїСѓСЃС‚Рѕ'; text.textContent = 'РќРёС‡РµРіРѕ РЅРµ РёРіСЂР°РµС‚'; return; }
+    pill.textContent = v.playing ? 'РёРґС‘С‚' : 'РїР°СѓР·Р°';
     pill.classList.add(v.playing ? 'is-playing' : 'is-paused');
     let label = ytTitle;
     if (!label) {
@@ -477,14 +480,14 @@
       } catch { label = v.url; }
     }
     const t = fmtTime(kind ? P.time() : expectedTime(v));
-    text.textContent = `${label} · ${t}${v.by ? ' · последнее действие: ' + v.by : ''}`;
+    text.textContent = `${label} В· ${t}${v.by ? ' В· РїРѕСЃР»РµРґРЅРµРµ РґРµР№СЃС‚РІРёРµ: ' + v.by : ''}`;
     text.title = v.url;
   }
 
   $('#urlForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const url = $('#urlInput').value.trim();
-    if (!/^https?:\/\//i.test(url)) { toast('Ссылка должна начинаться с http:// или https://'); return; }
+    if (!/^https?:\/\//i.test(url)) { toast('РЎСЃС‹Р»РєР° РґРѕР»Р¶РЅР° РЅР°С‡РёРЅР°С‚СЊСЃСЏ СЃ http:// РёР»Рё https://'); return; }
     socket.emit('video:set', { url });
     state.video = { url, playing: false, time: 0, ts: serverNow(), by: myName, action: 'set' };
     loadVideo(state.video);
@@ -496,7 +499,7 @@
       if (!d) return;
       state.video = d.video;
       if (d.video.url !== currentUrl) loadVideo(d.video); else applyState(true);
-      toast('Синхронизировано');
+      toast('РЎРёРЅС…СЂРѕРЅРёР·РёСЂРѕРІР°РЅРѕ');
     });
   });
 
@@ -507,20 +510,20 @@
     else if (kind === 'file' && video.webkitEnterFullscreen) video.webkitEnterFullscreen();
   });
 
-  /* ================= ШАШКИ ================= */
+  /* ================= РЁРђРЁРљР ================= */
   const boardEl = $('#board');
   let sel = null; // { prefix: [[r,c], ...] }
   const key = (sq) => sq[0] * 8 + sq[1];
   const prefixMatch = (path, prefix) => prefix.every((sq, i) => path[i] && path[i][0] === sq[0] && path[i][1] === sq[1]);
-  const colorWord = { w: 'белые', b: 'чёрные' };
-  const colorWordGen = { w: 'белых', b: 'чёрных' };
+  const colorWord = { w: 'Р±РµР»С‹Рµ', b: 'С‡С‘СЂРЅС‹Рµ' };
+  const colorWordGen = { w: 'Р±РµР»С‹С…', b: 'С‡С‘СЂРЅС‹С…' };
 
   socket.on('game', (g) => {
     const wasMyTurn = state.game && canAct();
     state.game = g;
     sel = null;
     renderGame();
-    if (!wasMyTurn && canAct() && activeTab !== 'game') toast('Твой ход в шашках');
+    if (!wasMyTurn && canAct() && activeTab !== 'game') toast('РўРІРѕР№ С…РѕРґ РІ С€Р°С€РєР°С…');
   });
 
   const mySeats = () => {
@@ -552,13 +555,13 @@
     info.className = 'seat-info';
     const label = document.createElement('span');
     label.className = 'seat-label';
-    label.textContent = color === 'w' ? 'Белые' : 'Чёрные';
+    label.textContent = color === 'w' ? 'Р‘РµР»С‹Рµ' : 'Р§С‘СЂРЅС‹Рµ';
     const nm = document.createElement('span');
     nm.className = 'seat-name' + (id ? '' : ' is-empty');
-    nm.textContent = id ? nameOf(id) + (id === clientId ? ' (ты)' : '') + (isOnline(id) ? '' : ' · не в сети') : 'место свободно';
+    nm.textContent = id ? nameOf(id) + (id === clientId ? ' (С‚С‹)' : '') + (isOnline(id) ? '' : ' В· РЅРµ РІ СЃРµС‚Рё') : 'РјРµСЃС‚Рѕ СЃРІРѕР±РѕРґРЅРѕ';
     const left = document.createElement('span');
     left.className = 'seat-left';
-    left.textContent = g.board ? `на доске ${Checkers.countPieces(board, color)}` : '';
+    left.textContent = g.board ? `РЅР° РґРѕСЃРєРµ ${Checkers.countPieces(board, color)}` : '';
     info.append(label, nm, left);
     el.append(piece, info);
   }
@@ -572,18 +575,18 @@
     renderSeat($('#seatBottom'), vc);
     const sc = (c) => (g.seats[c] && g.scores[g.seats[c]]) || 0;
     $('#scoreNums').textContent = `${sc(topColor)} : ${sc(vc)}`;
-    $('#draws').textContent = `ничьих ${g.draws || 0}`;
+    $('#draws').textContent = `РЅРёС‡СЊРёС… ${g.draws || 0}`;
 
     const tl = $('#turnLine');
     if (g.status === 'playing') {
       tl.innerHTML = '';
       const s = document.createElement('strong');
-      s.textContent = canAct() ? 'Твой ход' : `Ходят ${colorWord[g.turn]}`;
+      s.textContent = canAct() ? 'РўРІРѕР№ С…РѕРґ' : `РҐРѕРґСЏС‚ ${colorWord[g.turn]}`;
       tl.append(s);
-      if (!canAct() && g.seats[g.turn]) tl.append(` — ${nameOf(g.seats[g.turn])}`);
-      tl.append(` · партия №${g.gameNo}, ход ${Math.floor(g.moveNo / 2) + 1}`);
+      if (!canAct() && g.seats[g.turn]) tl.append(` вЂ” ${nameOf(g.seats[g.turn])}`);
+      tl.append(` В· РїР°СЂС‚РёСЏ в„–${g.gameNo}, С…РѕРґ ${Math.floor(g.moveNo / 2) + 1}`);
     } else {
-      tl.textContent = g.gameNo ? `Сыграно партий: ${g.gameNo}` : '';
+      tl.textContent = g.gameNo ? `РЎС‹РіСЂР°РЅРѕ РїР°СЂС‚РёР№: ${g.gameNo}` : '';
     }
 
     renderBoard();
@@ -605,7 +608,7 @@
     const lastSq = new Set(g.lastMove && g.status !== 'idle' ? [g.lastMove.path[0], g.lastMove.path[g.lastMove.path.length - 1]].map(key) : []);
     const lastCaps = new Set(g.lastMove && g.status !== 'idle' ? g.lastMove.captures.map(key) : []);
 
-    // Во время многоходового боя показываем шашку на промежуточной клетке
+    // Р’Рѕ РІСЂРµРјСЏ РјРЅРѕРіРѕС…РѕРґРѕРІРѕРіРѕ Р±РѕСЏ РїРѕРєР°Р·С‹РІР°РµРј С€Р°С€РєСѓ РЅР° РїСЂРѕРјРµР¶СѓС‚РѕС‡РЅРѕР№ РєР»РµС‚РєРµ
     let shown = board;
     if (sel && sel.prefix.length > 1) {
       shown = board.map((row) => row.slice());
@@ -674,12 +677,12 @@
         renderBoard();
         return;
       }
-      if (sel.prefix.length > 1) { toast('Бой нужно продолжить'); return; }
+      if (sel.prefix.length > 1) { toast('Р‘РѕР№ РЅСѓР¶РЅРѕ РїСЂРѕРґРѕР»Р¶РёС‚СЊ'); return; }
     }
     if (moves.some((m) => key(m.path[0]) === k)) {
       sel = sel && key(sel.prefix[0]) === k ? null : { prefix: [[r, c]] };
     } else {
-      if (g.board[r][c] && Checkers.colorOf(g.board[r][c]) === g.turn && moves.length && moves[0].captures.length) toast('Бить обязательно — выбери шашку, которая может бить');
+      if (g.board[r][c] && Checkers.colorOf(g.board[r][c]) === g.turn && moves.length && moves[0].captures.length) toast('Р‘РёС‚СЊ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ вЂ” РІС‹Р±РµСЂРё С€Р°С€РєСѓ, РєРѕС‚РѕСЂР°СЏ РјРѕР¶РµС‚ Р±РёС‚СЊ');
       sel = null;
     }
     renderBoard();
@@ -687,7 +690,7 @@
 
   function sendMove(path) {
     socket.emit('game:move', { path }, (res) => {
-      if (res && !res.ok) { toast(res.error || 'Ход не принят'); renderGame(); }
+      if (res && !res.ok) { toast(res.error || 'РҐРѕРґ РЅРµ РїСЂРёРЅСЏС‚'); renderGame(); }
     });
   }
 
@@ -696,15 +699,15 @@
     const ov = $('#boardOverlay');
     let title = '', text = '';
     if (g.status === 'over') {
-      if (g.winner === 'draw') { title = 'Ничья'; text = 'Следующую партию начнёте с переменой цвета.'; }
+      if (g.winner === 'draw') { title = 'РќРёС‡СЊСЏ'; text = 'РЎР»РµРґСѓСЋС‰СѓСЋ РїР°СЂС‚РёСЋ РЅР°С‡РЅС‘С‚Рµ СЃ РїРµСЂРµРјРµРЅРѕР№ С†РІРµС‚Р°.'; }
       else {
         const wid = g.seats[g.winner];
-        title = wid === clientId && mySeats().length === 1 ? 'Победа!' : `Победа ${colorWordGen[g.winner]}`;
-        text = `${nameOf(wid)} забирает партию. Следующая — с переменой цвета.`;
+        title = wid === clientId && mySeats().length === 1 ? 'РџРѕР±РµРґР°!' : `РџРѕР±РµРґР° ${colorWordGen[g.winner]}`;
+        text = `${nameOf(wid)} Р·Р°Р±РёСЂР°РµС‚ РїР°СЂС‚РёСЋ. РЎР»РµРґСѓСЋС‰Р°СЏ вЂ” СЃ РїРµСЂРµРјРµРЅРѕР№ С†РІРµС‚Р°.`;
       }
     } else if (g.status !== 'playing') {
-      if (!g.seats.w || !g.seats.b) { title = 'Садитесь за доску'; text = 'Каждый выбирает свободный цвет кнопками ниже.'; }
-      else { title = 'Всё готово'; text = 'Белые начинают. Нажмите «Начать партию».'; }
+      if (!g.seats.w || !g.seats.b) { title = 'РЎР°РґРёС‚РµСЃСЊ Р·Р° РґРѕСЃРєСѓ'; text = 'РљР°Р¶РґС‹Р№ РІС‹Р±РёСЂР°РµС‚ СЃРІРѕР±РѕРґРЅС‹Р№ С†РІРµС‚ РєРЅРѕРїРєР°РјРё РЅРёР¶Рµ.'; }
+      else { title = 'Р’СЃС‘ РіРѕС‚РѕРІРѕ'; text = 'Р‘РµР»С‹Рµ РЅР°С‡РёРЅР°СЋС‚. РќР°Р¶РјРёС‚Рµ В«РќР°С‡Р°С‚СЊ РїР°СЂС‚РёСЋВ».'; }
     }
     ov.hidden = !title;
     $('#overlayTitle').textContent = title;
@@ -729,37 +732,37 @@
       for (const c of ['w', 'b']) {
         const id = g.seats[c];
         if (!id || (id !== clientId && !isOnline(id))) {
-          box.append(btn(`Сесть за ${colorWordGen[c]}`, 'btn-ghost', () => socket.emit('game:sit', { color: c })));
+          box.append(btn(`РЎРµСЃС‚СЊ Р·Р° ${colorWordGen[c]}`, 'btn-ghost', () => socket.emit('game:sit', { color: c })));
         }
       }
       if (g.seats.w && g.seats.b && seated) {
-        if (g.status === 'over') box.append(btn('Следующая партия · цвета меняются', 'btn-primary', () => socket.emit('game:start')));
+        if (g.status === 'over') box.append(btn('РЎР»РµРґСѓСЋС‰Р°СЏ РїР°СЂС‚РёСЏ В· С†РІРµС‚Р° РјРµРЅСЏСЋС‚СЃСЏ', 'btn-primary', () => socket.emit('game:start')));
         else {
-          box.append(btn('Начать партию', 'btn-primary', () => socket.emit('game:start')));
-          box.append(btn('Поменяться цветами', 'btn-ghost', () => socket.emit('game:swap')));
+          box.append(btn('РќР°С‡Р°С‚СЊ РїР°СЂС‚РёСЋ', 'btn-primary', () => socket.emit('game:start')));
+          box.append(btn('РџРѕРјРµРЅСЏС‚СЊСЃСЏ С†РІРµС‚Р°РјРё', 'btn-ghost', () => socket.emit('game:swap')));
         }
       }
-      if (seated) box.append(btn('Встать из-за доски', 'btn-ghost btn-sm', () => socket.emit('game:stand')));
+      if (seated) box.append(btn('Р’СЃС‚Р°С‚СЊ РёР·-Р·Р° РґРѕСЃРєРё', 'btn-ghost btn-sm', () => socket.emit('game:stand')));
     } else if (seated) {
       const myColor = g.seats[g.turn] === clientId ? g.turn : mySeats()[0];
       if (g.drawOffer && (g.drawOffer !== myColor || mySeats().length === 2)) {
-        box.append(btn('Принять ничью', 'btn-amber', () => socket.emit('game:draw', { action: 'accept' })));
-        box.append(btn('Отказаться', 'btn-ghost', () => socket.emit('game:draw', { action: 'decline' })));
+        box.append(btn('РџСЂРёРЅСЏС‚СЊ РЅРёС‡СЊСЋ', 'btn-amber', () => socket.emit('game:draw', { action: 'accept' })));
+        box.append(btn('РћС‚РєР°Р·Р°С‚СЊСЃСЏ', 'btn-ghost', () => socket.emit('game:draw', { action: 'decline' })));
       } else if (g.drawOffer) {
         const s = document.createElement('span');
         s.className = 'draws';
-        s.textContent = 'Ничья предложена, ждём ответа';
+        s.textContent = 'РќРёС‡СЊСЏ РїСЂРµРґР»РѕР¶РµРЅР°, Р¶РґС‘Рј РѕС‚РІРµС‚Р°';
         box.append(s);
       } else {
-        box.append(btn('Предложить ничью', 'btn-ghost', () => socket.emit('game:draw', { action: 'offer' })));
+        box.append(btn('РџСЂРµРґР»РѕР¶РёС‚СЊ РЅРёС‡СЊСЋ', 'btn-ghost', () => socket.emit('game:draw', { action: 'offer' })));
       }
-      box.append(armable(btn('', 'btn-warn'), 'Сдаться', 'Точно сдаться?', () => socket.emit('game:resign')));
+      box.append(armable(btn('', 'btn-warn'), 'РЎРґР°С‚СЊСЃСЏ', 'РўРѕС‡РЅРѕ СЃРґР°С‚СЊСЃСЏ?', () => socket.emit('game:resign')));
     }
     if (seated && (g.gameNo || g.draws)) {
       const reset = document.createElement('button');
       reset.type = 'button';
       reset.className = 'btn-link';
-      armable(reset, 'Обнулить счёт', 'Нажми ещё раз, чтобы обнулить', () => socket.emit('game:reset-score'));
+      armable(reset, 'РћР±РЅСѓР»РёС‚СЊ СЃС‡С‘С‚', 'РќР°Р¶РјРё РµС‰С‘ СЂР°Р·, С‡С‚РѕР±С‹ РѕР±РЅСѓР»РёС‚СЊ', () => socket.emit('game:reset-score'));
       box.append(reset);
     }
   }
