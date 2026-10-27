@@ -3,12 +3,12 @@
   const $ = (s) => document.querySelector(s);
   const LS = {
     get(k) { try { return localStorage.getItem(k); } catch { return null; } },
-    set(k, v) { try { localStorage.setItem(k, v); } catch { /* РїСЂРёРІР°С‚РЅС‹Р№ СЂРµР¶РёРј */ } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch { /* приватный режим */ } },
   };
   const svgHeart = '<svg viewBox="0 0 24 24"><path d="M12 20.5s-7.6-4.6-9.6-9.3C1 7.9 3.1 4.5 6.7 4.5c2.1 0 3.6 1.1 5.3 3 1.7-1.9 3.2-3 5.3-3 3.6 0 5.7 3.4 4.3 6.7-2 4.7-9.6 9.3-9.6 9.3z" fill="currentColor"/></svg>';
   const svgCrown = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l4.6 3.8L12 5l4.4 6.8L21 8l-2 10H5L3 8z" fill="currentColor"/></svg>';
 
-  /* ---------- РєС‚Рѕ СЏ Рё РіРґРµ ---------- */
+  /* ---------- кто я и где ---------- */
   let clientId = LS.get('nu_id');
   if (!clientId) {
     clientId = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36));
@@ -21,14 +21,14 @@
     params.set('r', roomId);
     history.replaceState(null, '', location.pathname + '?' + params.toString());
   }
-  $('#roomLabel').textContent = 'РєРѕРјРЅР°С‚Р° ' + roomId;
+  $('#roomLabel').textContent = 'комната ' + roomId;
 
   let myName = LS.get('nu_name') || '';
   const state = { video: null, game: null, users: [], offset: 0 };
   const serverNow = () => Date.now() + state.offset;
   const socket = io({ autoConnect: false });
 
-  /* ---------- РјРµР»РѕС‡Рё ---------- */
+  /* ---------- мелочи ---------- */
   let toastTimer = null;
   function toast(text) {
     const el = $('#toast');
@@ -59,7 +59,7 @@
     return btn;
   }
 
-  /* ---------- РІС…РѕРґ ---------- */
+  /* ---------- вход ---------- */
   const nameInput = $('#nameInput');
   nameInput.value = myName;
   setTimeout(() => nameInput.focus(), 50);
@@ -77,7 +77,7 @@
     socket.emit('hello', { room: roomId, clientId, name: myName }, onWelcome);
     syncClock();
   });
-  socket.on('disconnect', () => toast('РЎРІСЏР·СЊ РїРѕС‚РµСЂСЏРЅР°, РїРµСЂРµРїРѕРґРєР»СЋС‡Р°СЋСЃСЊвЂ¦'));
+  socket.on('disconnect', () => toast('Связь потеряна, переподключаюсь…'));
 
   function syncClock() {
     let best = null, n = 0;
@@ -106,13 +106,13 @@
     scrollChat(true);
     renderPeople();
     renderGame();
-    currentUrl = null; // РїРµСЂРµР·Р°РіСЂСѓР·РёС‚СЊ РїР»РµРµСЂ РЅР° СЃР»СѓС‡Р°Р№ РїРµСЂРµРїРѕРґРєР»СЋС‡РµРЅРёСЏ
+    currentUrl = null; // перезагрузить плеер на случай переподключения
     loadVideo(state.video);
   }
 
-  /* ---------- Р»СЋРґРё ---------- */
+  /* ---------- люди ---------- */
   socket.on('users', (u) => { state.users = u; renderPeople(); renderGame(); });
-  socket.on('joined', ({ name }) => toast(`${name} Р·Р°С…РѕРґРёС‚ РІ СѓРіРѕР»РѕРє`));
+  socket.on('joined', ({ name }) => toast(`${name} заходит в уголок`));
 
   function renderPeople() {
     const box = $('#people');
@@ -131,27 +131,27 @@
       if (u.id === clientId) {
         const y = document.createElement('span');
         y.className = 'person-you person-name';
-        y.textContent = 'С‚С‹';
+        y.textContent = 'ты';
         el.append(y);
       }
-      el.title = u.name + ' вЂ” РІ СЃРµС‚Рё';
+      el.title = u.name + ' — в сети';
       box.append(el);
     }
     if (list.length < 2) {
       const a = document.createElement('span');
       a.className = 'people-alone';
-      a.textContent = 'Р¶РґС‘Рј РІС‚РѕСЂРѕРіРѕ';
+      a.textContent = 'ждём второго';
       box.append(a);
     }
   }
 
   $('#inviteBtn').addEventListener('click', async () => {
     const link = location.origin + location.pathname + '?r=' + encodeURIComponent(roomId);
-    try { await navigator.clipboard.writeText(link); toast('РЎСЃС‹Р»РєР° СЃРєРѕРїРёСЂРѕРІР°РЅР° вЂ” РѕС‚РїСЂР°РІСЊ РµС‘ РІС‚РѕСЂРѕРјСѓ'); }
-    catch { window.prompt ? window.prompt('РЎРєРѕРїРёСЂСѓР№ СЃСЃС‹Р»РєСѓ:', link) : toast(link); }
+    try { await navigator.clipboard.writeText(link); toast('Ссылка скопирована — отправь её второму'); }
+    catch { window.prompt ? window.prompt('Скопируй ссылку:', link) : toast(link); }
   });
 
-  /* ---------- РІРєР»Р°РґРєРё ---------- */
+  /* ---------- вкладки ---------- */
   let activeTab = 'cinema';
   document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => setTab(t.dataset.tab)));
   function setTab(name) {
@@ -165,14 +165,14 @@
     updateGameDot();
   }
 
-  /* ---------- С‡Р°С‚ ---------- */
+  /* ---------- чат ---------- */
   const chatList = $('#chatList');
   let lastMsg = null;
   function showChatEmpty() {
     const p = document.createElement('p');
     p.className = 'chat-empty';
     p.id = 'chatEmpty';
-    p.textContent = 'Р—РґРµСЃСЊ Р±СѓРґРµС‚ РІР°С€Р° РїРµСЂРµРїРёСЃРєР°. РќР°РїРёС€Рё РїРµСЂРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ.';
+    p.textContent = 'Здесь будет ваша переписка. Напиши первое сообщение.';
     chatList.append(p);
   }
   function scrollChat(force) {
@@ -185,7 +185,7 @@
     if (m.sys) {
       const el = document.createElement('div');
       el.className = 'msg-sys';
-      el.textContent = m.text + ' В· ' + fmtClock(m.ts);
+      el.textContent = m.text + ' · ' + fmtClock(m.ts);
       chatList.append(el);
       lastMsg = null;
     } else {
@@ -195,7 +195,7 @@
       el.className = 'msg' + (mine ? ' mine' : '') + (cont ? ' cont' : '');
       const meta = document.createElement('div');
       meta.className = 'msg-meta';
-      meta.textContent = (mine ? 'С‚С‹' : m.name) + ' В· ' + fmtClock(m.ts);
+      meta.textContent = (mine ? 'ты' : m.name) + ' · ' + fmtClock(m.ts);
       const b = document.createElement('div');
       b.className = 'msg-bubble';
       b.textContent = m.text;
@@ -223,16 +223,16 @@
   });
   let typingTimer = null;
   socket.on('typing', ({ name }) => {
-    $('#typing').textContent = `${name} РїРµС‡Р°С‚Р°РµС‚вЂ¦`;
+    $('#typing').textContent = `${name} печатает…`;
     clearTimeout(typingTimer);
     typingTimer = setTimeout(() => { $('#typing').textContent = ''; }, 3000);
   });
 
-  /* ---------- СЃРµСЂРґРµС‡РєРё ---------- */
+  /* ---------- сердечки ---------- */
   $('#heartBtn').addEventListener('click', () => socket.emit('react'));
   socket.on('react', ({ name, actor }) => {
     spawnHearts();
-    if (actor !== socket.id) toast(`${name} РѕС‚РїСЂР°РІР»СЏРµС‚ СЃРµСЂРґРµС‡РєРѕ`);
+    if (actor !== socket.id) toast(`${name} отправляет сердечко`);
   });
   function spawnHearts() {
     const box = $('#hearts');
@@ -252,7 +252,7 @@
     }
   }
 
-  /* ================= Р’РР”Р•Рћ ================= */
+  /* ================= ВИДЕО ================= */
   const video = $('#video');
   const ytWrap = $('#ytWrap');
   let kind = null; // 'yt' | 'file' | null
@@ -273,7 +273,7 @@
         const m = x.pathname.match(/\/(embed|shorts|live|v)\/([\w-]{6,})/);
         if (m) return m[2];
       }
-    } catch { /* РЅРµ URL */ }
+    } catch { /* не URL */ }
     return null;
   }
 
@@ -319,19 +319,57 @@
     },
     seek(t) {
       if (kind === 'yt' && ytReady) yt.seekTo(t, true);
-      if (kind === 'file') { try { video.currentTime = t; } catch { /* РµС‰С‘ РЅРµ Р·Р°РіСЂСѓР¶РµРЅРѕ */ } }
+      if (kind === 'file') { try { video.currentTime = t; } catch { /* ещё не загружено */ } }
     },
   };
 
-  function showError(text) { const el = $('#stageError'); el.textContent = text; el.hidden = false; }
-  const showJoin = () => { $('#joinBtn').hidden = false; };
+  function showError(text, link) {
+    const el = $('#stageError');
+    el.textContent = text;
+    if (link) {
+      const a = document.createElement('a');
+      a.href = link; a.target = '_blank'; a.rel = 'noopener';
+      a.textContent = ' Открыть на YouTube';
+      a.style.color = 'var(--rose)';
+      el.append(a);
+    }
+    el.hidden = false;
+  }
+  const joinLabel = $('#joinBtn').lastChild;
+  const showJoin = (text) => { joinLabel.textContent = ' ' + (text || 'Присоединиться к просмотру'); $('#joinBtn').hidden = false; };
   const hideJoin = () => { $('#joinBtn').hidden = true; };
-  $('#joinBtn').addEventListener('click', () => { hideJoin(); applyState(true); });
+  const ytUnstarted = () => kind === 'yt' && ytReady && [-1, 5].includes(yt.getPlayerState());
+  $('#joinBtn').addEventListener('click', () => {
+    hideJoin();
+    if (!kind) return;
+    const v = state.video;
+    const t = expectedTime(v);
+    if (kind === 'yt' && ytReady) {
+      // Запуск прямо из нажатия — так телефон разрешает видео со звуком
+      suppress(800);
+      if (ytUnstarted()) yt.loadVideoById({ videoId: currentYtId, startSeconds: t });
+      else { yt.seekTo(t, true); yt.playVideo(); }
+      if (!v.playing) setTimeout(() => localChange(true, 'play'), 900);
+      return;
+    }
+    if (!v.playing) { P.play().catch(() => {}); return; }
+    applyState(true);
+  });
+  const YT_ERRORS = {
+    2: 'Ссылка на YouTube неправильная, проверь её.',
+    5: 'Этот браузер не может проиграть ролик. Попробуй Chrome или Safari.',
+    100: 'Ролик удалён или скрыт.',
+    101: 'Автор запретил показывать этот ролик на других сайтах. Выберите другой.',
+    150: 'Автор запретил показывать этот ролик на других сайтах. Выберите другой.',
+    152: 'YouTube не принял настройки плеера (ошибка 152). Обнови страницу.',
+    153: 'YouTube не принял настройки плеера (ошибка 153). Обнови страницу.',
+  };
+  let currentYtId = null;
 
   function teardown() {
     suppress(2000);
     kind = null; ytReady = false; ytTitle = '';
-    if (yt) { try { yt.destroy(); } catch { /* СѓР¶Рµ СѓРЅРёС‡С‚РѕР¶РµРЅ */ } yt = null; }
+    if (yt) { try { yt.destroy(); } catch { /* уже уничтожен */ } yt = null; }
     ytWrap.hidden = true;
     ytWrap.innerHTML = '<div id="ytPlayer"></div>';
     if (hls) { hls.destroy(); hls = null; }
@@ -353,21 +391,31 @@
     const id = parseYouTube(url);
     if (id) {
       kind = 'yt';
+      currentYtId = id;
       ytWrap.hidden = false;
+      const watchUrl = 'https://www.youtube.com/watch?v=' + id;
+      const loadTimer = setTimeout(() => {
+        if (currentUrl === url && !ytReady) showError('YouTube не загрузился. Проверь интернет или VPN и нажми «Синхронизировать».', watchUrl);
+      }, 12000);
       await loadYTApi();
       if (currentUrl !== url) return;
       yt = new YT.Player('ytPlayer', {
-        videoId: id, width: '100%', height: '100%',
-        playerVars: { playsinline: 1, rel: 0, modestbranding: 1, start: Math.floor(expectedTime(state.video)) },
+        videoId: id, width: '100%', height: '100%', host: 'https://www.youtube.com',
+        playerVars: { playsinline: 1, rel: 0, enablejsapi: 1, origin: location.origin },
         events: {
           onReady: () => {
+            clearTimeout(loadTimer);
             ytReady = true;
+            $('#stageError').hidden = true;
             try { ytTitle = (yt.getVideoData() || {}).title || ''; } catch { ytTitle = ''; }
             updateNow();
             applyState(true);
           },
           onStateChange: onYtState,
-          onError: () => showError('YouTube РЅРµ СЂР°Р·СЂРµС€Р°РµС‚ РїРѕРєР°Р·Р°С‚СЊ СЌС‚Рѕ РІРёРґРµРѕ РІРѕ РІСЃС‚СЂРѕРµРЅРЅРѕРј РїР»РµРµСЂРµ. РџРѕРїСЂРѕР±СѓР№ РґСЂСѓРіСѓСЋ СЃСЃС‹Р»РєСѓ.'),
+          onError: (e) => {
+            hideJoin();
+            showError(YT_ERRORS[e.data] || `YouTube не смог показать ролик (ошибка ${e.data}).`, watchUrl);
+          },
         },
       });
     } else {
@@ -375,7 +423,7 @@
       video.hidden = false;
       const isHls = /\.m3u8(\?|#|$)/i.test(url);
       if (isHls && !video.canPlayType('application/vnd.apple.mpegurl')) {
-        try { if (!window.Hls) await loadScript('https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js'); } catch { /* РЅРёР¶Рµ вЂ” Р·Р°РїР°СЃРЅРѕР№ РІР°СЂРёР°РЅС‚ */ }
+        try { if (!window.Hls) await loadScript('https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js'); } catch { /* ниже — запасной вариант */ }
         if (currentUrl !== url) return;
         if (window.Hls && Hls.isSupported()) { hls = new Hls(); hls.loadSource(url); hls.attachMedia(video); }
         else video.src = url;
@@ -389,16 +437,28 @@
 
   video.addEventListener('error', () => {
     if (kind !== 'file') return;
-    showError('РќРµ РїРѕР»СѓС‡РёР»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ РІРёРґРµРѕ. РќСѓР¶РЅР° РїСЂСЏРјР°СЏ СЃСЃС‹Р»РєР° РЅР° С„Р°Р№Р» (.mp4, .webm, .m3u8) РёР»Рё СЃСЃС‹Р»РєР° РЅР° YouTube. РЎС‚СЂР°РЅРёС†С‹ РѕРЅР»Р°Р№РЅ-РєРёРЅРѕС‚РµР°С‚СЂРѕРІ С‚Р°Рє РЅРµ РѕС‚РєСЂС‹РІР°СЋС‚СЃСЏ.');
+    showError('Не получилось открыть видео. Нужна прямая ссылка на файл (.mp4, .webm, .m3u8) или ссылка на YouTube. Страницы онлайн-кинотеатров так не открываются.');
   });
 
   function applyState(force) {
     const v = state.video;
     if (!v || !v.url || !kind) return;
     if (kind === 'yt' && !ytReady) return;
-    // Р’РёРґРµРѕ РµС‰С‘ РЅРµ Р·Р°РїСѓСЃРєР°Р»Рё Рё РѕРЅРѕ РЅР° РїР°СѓР·Рµ: РЅРµ С‚СЂРѕРіР°РµРј РїР»РµРµСЂ,
-    // РёРЅР°С‡Рµ YouTube РЅР° С‚РµР»РµС„РѕРЅРµ РїСЂСЏС‡РµС‚ РїСЂРµРІСЊСЋ Рё РїРѕРєР°Р·С‹РІР°РµС‚ С‡С‘СЂРЅС‹Р№ СЌРєСЂР°РЅ
-    if (kind === 'yt' && !v.playing && [-1, 5].includes(yt.getPlayerState())) { hideJoin(); updateNow(); return; }
+    // Видео ещё не запускали и оно на паузе: не трогаем плеер,
+    // иначе YouTube на телефоне прячет превью и показывает чёрный экран
+    if (ytUnstarted()) {
+      // Ролик ещё ни разу не запускали: не трогаем плеер (иначе на телефоне чёрный экран),
+      // а показываем свою кнопку — запуск из нажатия срабатывает всегда
+      if (v.playing) {
+        suppress(1500);
+        yt.loadVideoById({ videoId: currentYtId, startSeconds: expectedTime(v) });
+        setTimeout(() => { if (state.video.playing && kind === 'yt' && !P.playing()) showJoin(); }, 2500);
+      } else {
+        showJoin('Включить видео');
+      }
+      updateNow();
+      return;
+    }
     suppress(1500);
     const t = expectedTime(v);
     if (force || Math.abs(P.time() - t) > 1.2) P.seek(t);
@@ -430,11 +490,11 @@
   video.addEventListener('pause', () => { if (video.seeking || video.ended) return; localChange(false); });
   video.addEventListener('seeked', () => localChange(!video.paused));
   function onYtState(e) {
-    if (e.data === 1) { hideJoin(); localChange(true); }
+    if (e.data === 1) { hideJoin(); $('#stageError').hidden = true; localChange(true); }
     else if (e.data === 2) localChange(false);
   }
 
-  // РџРµСЂРµРјРѕС‚РєР° YouTube РЅР° РїР°СѓР·Рµ Рё РїРѕРґСЃС‚СЂРѕР№РєР° СЂР°СЃСЃРёРЅС…СЂРѕРЅР°
+  // Перемотка YouTube на паузе и подстройка рассинхрона
   let lastT = 0, tick = 0;
   setInterval(() => {
     const v = state.video;
@@ -461,309 +521,11 @@
     } else {
       applyState();
     }
-    const words = { play: 'РІРєР»СЋС‡Р°РµС‚', pause: 'СЃС‚Р°РІРёС‚ РЅР° РїР°СѓР·Сѓ', seek: 'РїРµСЂРµРјР°С‚С‹РІР°РµС‚ РЅР° ' + fmtTime(v.time), set: 'СЃС‚Р°РІРёС‚ РЅРѕРІРѕРµ РІРёРґРµРѕ' };
+    const words = { play: 'включает', pause: 'ставит на паузу', seek: 'перематывает на ' + fmtTime(v.time), set: 'ставит новое видео' };
     if (v.by && words[v.action]) toast(`${v.by} ${words[v.action]}`);
   });
 
   function updateNow() {
     const v = state.video;
     const pill = $('#nowPill'), text = $('#nowText');
-    pill.className = 'now-pill';
-    if (!v || !v.url) { pill.textContent = 'РїСѓСЃС‚Рѕ'; text.textContent = 'РќРёС‡РµРіРѕ РЅРµ РёРіСЂР°РµС‚'; return; }
-    pill.textContent = v.playing ? 'РёРґС‘С‚' : 'РїР°СѓР·Р°';
-    pill.classList.add(v.playing ? 'is-playing' : 'is-paused');
-    let label = ytTitle;
-    if (!label) {
-      try {
-        const u = new URL(v.url);
-        label = parseYouTube(v.url) ? 'YouTube' : decodeURIComponent(u.pathname.split('/').pop() || u.hostname);
-      } catch { label = v.url; }
-    }
-    const t = fmtTime(kind ? P.time() : expectedTime(v));
-    text.textContent = `${label} В· ${t}${v.by ? ' В· РїРѕСЃР»РµРґРЅРµРµ РґРµР№СЃС‚РІРёРµ: ' + v.by : ''}`;
-    text.title = v.url;
-  }
-
-  $('#urlForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const url = $('#urlInput').value.trim();
-    if (!/^https?:\/\//i.test(url)) { toast('РЎСЃС‹Р»РєР° РґРѕР»Р¶РЅР° РЅР°С‡РёРЅР°С‚СЊСЃСЏ СЃ http:// РёР»Рё https://'); return; }
-    socket.emit('video:set', { url });
-    state.video = { url, playing: false, time: 0, ts: serverNow(), by: myName, action: 'set' };
-    loadVideo(state.video);
-    $('#urlInput').value = '';
-  });
-
-  $('#syncBtn').addEventListener('click', () => {
-    socket.emit('video:get', null, (d) => {
-      if (!d) return;
-      state.video = d.video;
-      if (d.video.url !== currentUrl) loadVideo(d.video); else applyState(true);
-      toast('РЎРёРЅС…СЂРѕРЅРёР·РёСЂРѕРІР°РЅРѕ');
-    });
-  });
-
-  $('#fsBtn').addEventListener('click', () => {
-    const stage = $('#stage');
-    if (document.fullscreenElement) { document.exitFullscreen().catch(() => {}); return; }
-    if (stage.requestFullscreen) stage.requestFullscreen().catch(() => {});
-    else if (kind === 'file' && video.webkitEnterFullscreen) video.webkitEnterFullscreen();
-  });
-
-  /* ================= РЁРђРЁРљР ================= */
-  const boardEl = $('#board');
-  let sel = null; // { prefix: [[r,c], ...] }
-  const key = (sq) => sq[0] * 8 + sq[1];
-  const prefixMatch = (path, prefix) => prefix.every((sq, i) => path[i] && path[i][0] === sq[0] && path[i][1] === sq[1]);
-  const colorWord = { w: 'Р±РµР»С‹Рµ', b: 'С‡С‘СЂРЅС‹Рµ' };
-  const colorWordGen = { w: 'Р±РµР»С‹С…', b: 'С‡С‘СЂРЅС‹С…' };
-
-  socket.on('game', (g) => {
-    const wasMyTurn = state.game && canAct();
-    state.game = g;
-    sel = null;
-    renderGame();
-    if (!wasMyTurn && canAct() && activeTab !== 'game') toast('РўРІРѕР№ С…РѕРґ РІ С€Р°С€РєР°С…');
-  });
-
-  const mySeats = () => {
-    const g = state.game;
-    if (!g) return [];
-    return ['w', 'b'].filter((c) => g.seats[c] === clientId);
-  };
-  const viewColor = () => { const s = mySeats(); return s.length === 1 ? s[0] : 'w'; };
-  const canAct = () => {
-    const g = state.game;
-    return !!g && g.status === 'playing' && g.seats[g.turn] === clientId;
-  };
-  const nameOf = (id) => (id && state.game.names[id]) || '';
-  const isOnline = (id) => state.users.some((u) => u.id === id);
-
-  function updateGameDot() {
-    $('#gameDot').hidden = !(canAct() && activeTab !== 'game');
-  }
-
-  function renderSeat(el, color) {
-    const g = state.game;
-    const id = g.seats[color];
-    const board = g.board || Checkers.initialBoard();
-    el.className = 'seat' + (g.status === 'playing' && g.turn === color ? ' is-turn' : '');
-    el.innerHTML = '';
-    const piece = document.createElement('span');
-    piece.className = 'seat-piece ' + color;
-    const info = document.createElement('div');
-    info.className = 'seat-info';
-    const label = document.createElement('span');
-    label.className = 'seat-label';
-    label.textContent = color === 'w' ? 'Р‘РµР»С‹Рµ' : 'Р§С‘СЂРЅС‹Рµ';
-    const nm = document.createElement('span');
-    nm.className = 'seat-name' + (id ? '' : ' is-empty');
-    nm.textContent = id ? nameOf(id) + (id === clientId ? ' (С‚С‹)' : '') + (isOnline(id) ? '' : ' В· РЅРµ РІ СЃРµС‚Рё') : 'РјРµСЃС‚Рѕ СЃРІРѕР±РѕРґРЅРѕ';
-    const left = document.createElement('span');
-    left.className = 'seat-left';
-    left.textContent = g.board ? `РЅР° РґРѕСЃРєРµ ${Checkers.countPieces(board, color)}` : '';
-    info.append(label, nm, left);
-    el.append(piece, info);
-  }
-
-  function renderGame() {
-    const g = state.game;
-    if (!g) return;
-    const vc = viewColor();
-    const topColor = vc === 'w' ? 'b' : 'w';
-    renderSeat($('#seatTop'), topColor);
-    renderSeat($('#seatBottom'), vc);
-    const sc = (c) => (g.seats[c] && g.scores[g.seats[c]]) || 0;
-    $('#scoreNums').textContent = `${sc(topColor)} : ${sc(vc)}`;
-    $('#draws').textContent = `РЅРёС‡СЊРёС… ${g.draws || 0}`;
-
-    const tl = $('#turnLine');
-    if (g.status === 'playing') {
-      tl.innerHTML = '';
-      const s = document.createElement('strong');
-      s.textContent = canAct() ? 'РўРІРѕР№ С…РѕРґ' : `РҐРѕРґСЏС‚ ${colorWord[g.turn]}`;
-      tl.append(s);
-      if (!canAct() && g.seats[g.turn]) tl.append(` вЂ” ${nameOf(g.seats[g.turn])}`);
-      tl.append(` В· РїР°СЂС‚РёСЏ в„–${g.gameNo}, С…РѕРґ ${Math.floor(g.moveNo / 2) + 1}`);
-    } else {
-      tl.textContent = g.gameNo ? `РЎС‹РіСЂР°РЅРѕ РїР°СЂС‚РёР№: ${g.gameNo}` : '';
-    }
-
-    renderBoard();
-    renderOverlay();
-    renderControls();
-    updateGameDot();
-  }
-
-  function renderBoard() {
-    const g = state.game;
-    const board = g.board || Checkers.initialBoard();
-    const flip = viewColor() === 'b';
-    const act = canAct();
-    const moves = act ? Checkers.legalMoves(board, g.turn) : [];
-    const cand = sel ? moves.filter((m) => prefixMatch(m.path, sel.prefix)) : moves;
-    const movable = new Set(sel && sel.prefix.length > 1 ? [] : moves.map((m) => key(m.path[0])));
-    const targets = new Set(sel ? cand.map((m) => m.path[sel.prefix.length]).filter(Boolean).map(key) : []);
-    const pendingCaps = new Set(sel && cand[0] ? cand[0].captures.slice(0, sel.prefix.length - 1).map(key) : []);
-    const lastSq = new Set(g.lastMove && g.status !== 'idle' ? [g.lastMove.path[0], g.lastMove.path[g.lastMove.path.length - 1]].map(key) : []);
-    const lastCaps = new Set(g.lastMove && g.status !== 'idle' ? g.lastMove.captures.map(key) : []);
-
-    // Р’Рѕ РІСЂРµРјСЏ РјРЅРѕРіРѕС…РѕРґРѕРІРѕРіРѕ Р±РѕСЏ РїРѕРєР°Р·С‹РІР°РµРј С€Р°С€РєСѓ РЅР° РїСЂРѕРјРµР¶СѓС‚РѕС‡РЅРѕР№ РєР»РµС‚РєРµ
-    let shown = board;
-    if (sel && sel.prefix.length > 1) {
-      shown = board.map((row) => row.slice());
-      const [sr, sc] = sel.prefix[0];
-      const [er, ec] = sel.prefix[sel.prefix.length - 1];
-      const p = shown[sr][sc];
-      shown[sr][sc] = null;
-      shown[er][ec] = p;
-    }
-
-    const frag = document.createDocumentFragment();
-    for (let vr = 0; vr < 8; vr++) {
-      for (let vcol = 0; vcol < 8; vcol++) {
-        const r = flip ? 7 - vr : vr;
-        const c = flip ? 7 - vcol : vcol;
-        const dark = (r + c) % 2 === 1;
-        const sq = document.createElement('div');
-        const k = r * 8 + c;
-        let cls = 'sq ' + (dark ? 'dark' : 'light');
-        if (dark) {
-          if (lastSq.has(k)) cls += ' last';
-          if (targets.has(k)) cls += ' target';
-          if (movable.has(k)) cls += ' movable';
-          if (sel && key(sel.prefix[sel.prefix.length - 1]) === k) cls += ' selected';
-          if (pendingCaps.has(k)) cls += ' cap-pending';
-          if (lastCaps.has(k) && !shown[r][c]) cls += ' cap-last';
-        }
-        sq.className = cls;
-        sq.dataset.r = r;
-        sq.dataset.c = c;
-        if (vcol === 0) {
-          const l = document.createElement('span'); l.className = 'coord rank'; l.textContent = String(8 - r); sq.append(l);
-        }
-        if (vr === 7) {
-          const l = document.createElement('span'); l.className = 'coord file'; l.textContent = 'abcdefgh'[c]; sq.append(l);
-        }
-        const p = shown[r][c];
-        if (p) {
-          const pc = document.createElement('div');
-          pc.className = 'piece ' + Checkers.colorOf(p) + (Checkers.isKing(p) ? ' king' : '');
-          if (Checkers.isKing(p)) pc.innerHTML = svgCrown;
-          sq.append(pc);
-        } else if (lastCaps.has(k)) {
-          const gh = document.createElement('div'); gh.className = 'piece-ghost'; sq.append(gh);
-        }
-        frag.append(sq);
-      }
-    }
-    boardEl.replaceChildren(frag);
-  }
-
-  boardEl.addEventListener('click', (e) => {
-    const sqEl = e.target.closest('.sq.dark');
-    if (!sqEl || !canAct()) return;
-    const g = state.game;
-    const r = +sqEl.dataset.r, c = +sqEl.dataset.c, k = r * 8 + c;
-    const moves = Checkers.legalMoves(g.board, g.turn);
-    if (sel) {
-      const cand = moves.filter((m) => prefixMatch(m.path, sel.prefix));
-      const next = cand.filter((m) => m.path[sel.prefix.length] && key(m.path[sel.prefix.length]) === k);
-      if (next.length) {
-        const prefix = sel.prefix.concat([[r, c]]);
-        const done = next.find((m) => m.path.length === prefix.length);
-        if (done) { sel = null; sendMove(done.path); }
-        else sel = { prefix };
-        renderBoard();
-        return;
-      }
-      if (sel.prefix.length > 1) { toast('Р‘РѕР№ РЅСѓР¶РЅРѕ РїСЂРѕРґРѕР»Р¶РёС‚СЊ'); return; }
-    }
-    if (moves.some((m) => key(m.path[0]) === k)) {
-      sel = sel && key(sel.prefix[0]) === k ? null : { prefix: [[r, c]] };
-    } else {
-      if (g.board[r][c] && Checkers.colorOf(g.board[r][c]) === g.turn && moves.length && moves[0].captures.length) toast('Р‘РёС‚СЊ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ вЂ” РІС‹Р±РµСЂРё С€Р°С€РєСѓ, РєРѕС‚РѕСЂР°СЏ РјРѕР¶РµС‚ Р±РёС‚СЊ');
-      sel = null;
-    }
-    renderBoard();
-  });
-
-  function sendMove(path) {
-    socket.emit('game:move', { path }, (res) => {
-      if (res && !res.ok) { toast(res.error || 'РҐРѕРґ РЅРµ РїСЂРёРЅСЏС‚'); renderGame(); }
-    });
-  }
-
-  function renderOverlay() {
-    const g = state.game;
-    const ov = $('#boardOverlay');
-    let title = '', text = '';
-    if (g.status === 'over') {
-      if (g.winner === 'draw') { title = 'РќРёС‡СЊСЏ'; text = 'РЎР»РµРґСѓСЋС‰СѓСЋ РїР°СЂС‚РёСЋ РЅР°С‡РЅС‘С‚Рµ СЃ РїРµСЂРµРјРµРЅРѕР№ С†РІРµС‚Р°.'; }
-      else {
-        const wid = g.seats[g.winner];
-        title = wid === clientId && mySeats().length === 1 ? 'РџРѕР±РµРґР°!' : `РџРѕР±РµРґР° ${colorWordGen[g.winner]}`;
-        text = `${nameOf(wid)} Р·Р°Р±РёСЂР°РµС‚ РїР°СЂС‚РёСЋ. РЎР»РµРґСѓСЋС‰Р°СЏ вЂ” СЃ РїРµСЂРµРјРµРЅРѕР№ С†РІРµС‚Р°.`;
-      }
-    } else if (g.status !== 'playing') {
-      if (!g.seats.w || !g.seats.b) { title = 'РЎР°РґРёС‚РµСЃСЊ Р·Р° РґРѕСЃРєСѓ'; text = 'РљР°Р¶РґС‹Р№ РІС‹Р±РёСЂР°РµС‚ СЃРІРѕР±РѕРґРЅС‹Р№ С†РІРµС‚ РєРЅРѕРїРєР°РјРё РЅРёР¶Рµ.'; }
-      else { title = 'Р’СЃС‘ РіРѕС‚РѕРІРѕ'; text = 'Р‘РµР»С‹Рµ РЅР°С‡РёРЅР°СЋС‚. РќР°Р¶РјРёС‚Рµ В«РќР°С‡Р°С‚СЊ РїР°СЂС‚РёСЋВ».'; }
-    }
-    ov.hidden = !title;
-    $('#overlayTitle').textContent = title;
-    $('#overlayText').textContent = text;
-  }
-
-  function btn(label, cls, onClick) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'btn ' + cls;
-    b.textContent = label;
-    if (onClick) b.addEventListener('click', onClick);
-    return b;
-  }
-
-  function renderControls() {
-    const g = state.game;
-    const box = $('#gameControls');
-    box.innerHTML = '';
-    const seated = mySeats().length > 0;
-    if (g.status !== 'playing') {
-      for (const c of ['w', 'b']) {
-        const id = g.seats[c];
-        if (!id || (id !== clientId && !isOnline(id))) {
-          box.append(btn(`РЎРµСЃС‚СЊ Р·Р° ${colorWordGen[c]}`, 'btn-ghost', () => socket.emit('game:sit', { color: c })));
-        }
-      }
-      if (g.seats.w && g.seats.b && seated) {
-        if (g.status === 'over') box.append(btn('РЎР»РµРґСѓСЋС‰Р°СЏ РїР°СЂС‚РёСЏ В· С†РІРµС‚Р° РјРµРЅСЏСЋС‚СЃСЏ', 'btn-primary', () => socket.emit('game:start')));
-        else {
-          box.append(btn('РќР°С‡Р°С‚СЊ РїР°СЂС‚РёСЋ', 'btn-primary', () => socket.emit('game:start')));
-          box.append(btn('РџРѕРјРµРЅСЏС‚СЊСЃСЏ С†РІРµС‚Р°РјРё', 'btn-ghost', () => socket.emit('game:swap')));
-        }
-      }
-      if (seated) box.append(btn('Р’СЃС‚Р°С‚СЊ РёР·-Р·Р° РґРѕСЃРєРё', 'btn-ghost btn-sm', () => socket.emit('game:stand')));
-    } else if (seated) {
-      const myColor = g.seats[g.turn] === clientId ? g.turn : mySeats()[0];
-      if (g.drawOffer && (g.drawOffer !== myColor || mySeats().length === 2)) {
-        box.append(btn('РџСЂРёРЅСЏС‚СЊ РЅРёС‡СЊСЋ', 'btn-amber', () => socket.emit('game:draw', { action: 'accept' })));
-        box.append(btn('РћС‚РєР°Р·Р°С‚СЊСЃСЏ', 'btn-ghost', () => socket.emit('game:draw', { action: 'decline' })));
-      } else if (g.drawOffer) {
-        const s = document.createElement('span');
-        s.className = 'draws';
-        s.textContent = 'РќРёС‡СЊСЏ РїСЂРµРґР»РѕР¶РµРЅР°, Р¶РґС‘Рј РѕС‚РІРµС‚Р°';
-        box.append(s);
-      } else {
-        box.append(btn('РџСЂРµРґР»РѕР¶РёС‚СЊ РЅРёС‡СЊСЋ', 'btn-ghost', () => socket.emit('game:draw', { action: 'offer' })));
-      }
-      box.append(armable(btn('', 'btn-warn'), 'РЎРґР°С‚СЊСЃСЏ', 'РўРѕС‡РЅРѕ СЃРґР°С‚СЊСЃСЏ?', () => socket.emit('game:resign')));
-    }
-    if (seated && (g.gameNo || g.draws)) {
-      const reset = document.createElement('button');
-      reset.type = 'button';
-      reset.className = 'btn-link';
-      armable(reset, 'РћР±РЅСѓР»РёС‚СЊ СЃС‡С‘С‚', 'РќР°Р¶РјРё РµС‰С‘ СЂР°Р·, С‡С‚РѕР±С‹ РѕР±РЅСѓР»РёС‚СЊ', () => socket.emit('game:reset-score'));
-      box.append(reset);
-    }
-  }
-})();
+    p
